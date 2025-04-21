@@ -1,18 +1,162 @@
 <!DOCTYPE html>
-<html>
-<head><title>Панель тренера</title>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель тренера</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            background: #f4f6fb;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .topbar {
+            background: linear-gradient(90deg, #2563eb 60%, #4f8cff 100%);
+            color: #fff;
+            padding: 32px 0 24px 0;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+        }
+        .topbar-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+        }
+        .topbar span {
+            font-size: 2.1em;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+        .topbar form {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .topbar select {
+            padding: 10px 18px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            min-width: 220px;
+        }
+        .topbar a {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-decoration: none;
+            transition: color .2s;
+        }
+        .topbar a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
+            padding: 36px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 700;
+            color: #2563eb;
+            letter-spacing: 1px;
+        }
+        h2 span {
+            color: #4f8cff;
+        }
+        table.styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .styled-table thead tr {
+            background: linear-gradient(90deg, #2563eb 60%, #4f8cff 100%);
+            color: #fff;
+            font-weight: bold;
+            text-align: left;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 14px 20px;
+            font-size: 1.05em;
+        }
+        .styled-table tbody tr:nth-child(even) {
+            background: #f9fbff;
+        }
+        .styled-table tbody tr:nth-child(odd) {
+            background: #eaf1ff;
+        }
+        .styled-table td {
+            vertical-align: middle;
+        }
+        .styled-table td:first-child {
+            font-weight: 600;
+        }
+        .styled-table td[colspan] {
+            text-align: center;
+            color: #888;
+            font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h2>Добро пожаловать, Тренер!</h2>
-    <p>Вот твои тренировки:</p>
-    <ul>
-        {% for t in trainings %}
-            <li>{{ t.date_time }}</li>
-        {% endfor %}
-    </ul>
-    <a href="/logout">Выйти</a>
-</div>
+    <div class="topbar">
+        <div class="topbar-inner">
+            <span>Расписание тренера</span>
+            <form id="trenerSelectForm">
+                <label for="trenerSelectDropdown" style="font-size:1.1em;">Тренер:</label>
+                <select id="trenerSelectDropdown">
+                    {% for t in all_trainers %}
+                        <option value="{{ t.id }}" {% if t.id == selected_trener.id %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <a href="/logout">Выйти</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Тренировки тренера: <span id="trenerName">{{ selected_trener.name }}</span></h2>
+        <div style="overflow-x:auto;">
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Клиент</th>
+                        <th>Дата</th>
+                        <th>Время</th>
+                        <th>Длительность</th>
+                    </tr>
+                </thead>
+                <tbody id="trainingsTableBody">
+                {% for t in trainings %}
+                    <tr>
+                        <td>{% for c in clients %}{% if c.id == t.client_id %}{{ c.name }}{% endif %}{% endfor %}</td>
+                        <td>{{ t.date_time.strftime('%d.%m.%Y') }}</td>
+                        <td>{{ t.date_time.strftime('%H:%M') }}</td>
+                        <td>{{ t.duration }} мин</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4">Нет тренировок</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('trenerSelectDropdown').onchange = function() {
+            const trenerId = this.value;
+            window.location = '/trener?trener_id=' + trenerId;
+        };
+    </script>
 </body>
 </html>

@@ -63,6 +63,9 @@
     <button id="btnAddRoom">Добавить зал</button>
     <button id="btnAddTrener">Добавить тренера</button>
     <button id="btnAddEquipment">Добавить оборудование</button>
+    <button id="btnShowClients">Все клиенты</button>
+    <button id="btnShowSubs">Все абонементы</button>
+    <button id="btnShowTrainings">Все тренировки</button>
     <a href="/logout">Выйти</a>
     <div style="overflow-x:auto; margin-top:30px;">
         <h3>Залы</h3>
@@ -189,6 +192,91 @@
     </div>
 </div>
 
+<!-- Модалка: Все клиенты -->
+<div id="modalAllClients" class="modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+  <div class="modal-content" style="background:#fff;min-width:600px;max-width:95vw;max-height:90vh;overflow:auto;position:relative;z-index:2100;">
+    <span class="close" id="closeAllClients" style="position:absolute;right:16px;top:12px;font-size:28px;cursor:pointer;">&times;</span>
+    <h3>Все клиенты</h3>
+    <input type="text" id="searchAllClients" placeholder="Поиск клиента..." style="margin-bottom:16px;width:100%;max-width:350px;">
+    <div style="overflow-x:auto;">
+    <table class="styled-table">
+      <thead>
+        <tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Зал</th><th>Действия</th></tr>
+      </thead>
+      <tbody id="allClientsTableBody">
+        {% for c in clients %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.phone }}</td>
+          <td>{% for r in rooms %}{% if r.id == c.main_room_id %}{{ r.address }}{% endif %}{% endfor %}</td>
+          <td><a href="/admin/client/delete/{{ c.id }}" onclick="return confirm('Удалить клиента?')">Удалить</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка: Все абонементы -->
+<div id="modalAllSubs" class="modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+  <div class="modal-content" style="background:#fff;min-width:600px;max-width:95vw;max-height:90vh;overflow:auto;position:relative;z-index:2100;">
+    <span class="close" id="closeAllSubs" style="position:absolute;right:16px;top:12px;font-size:28px;cursor:pointer;">&times;</span>
+    <h3>Все абонементы</h3>
+    <input type="text" id="searchAllSubs" placeholder="Поиск абонемента..." style="margin-bottom:16px;width:100%;max-width:350px;">
+    <div style="overflow-x:auto;">
+    <table class="styled-table">
+      <thead>
+        <tr><th>ID</th><th>Клиент</th><th>Дата начала</th><th>Длительность</th><th>Осталось занятий</th><th>Действия</th></tr>
+      </thead>
+      <tbody id="allSubsTableBody">
+        {% for s in subs %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{% for c in clients %}{% if c.id == s.client_id %}{{ c.name }}{% endif %}{% endfor %}</td>
+          <td>{{ s.start_date }}</td>
+          <td>{{ s.duration }}</td>
+          <td>{{ s.workout }}</td>
+          <td><a href="/admin/sub/delete/{{ s.id }}" onclick="return confirm('Удалить абонемент?')">Удалить</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка: Все тренировки -->
+<div id="modalAllTrainings" class="modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2000;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+  <div class="modal-content" style="background:#fff;min-width:700px;max-width:98vw;max-height:90vh;overflow:auto;position:relative;z-index:2100;">
+    <span class="close" id="closeAllTrainings" style="position:absolute;right:16px;top:12px;font-size:28px;cursor:pointer;">&times;</span>
+    <h3>Все тренировки</h3>
+    <input type="text" id="searchAllTrainings" placeholder="Поиск тренировки..." style="margin-bottom:16px;width:100%;max-width:350px;">
+    <div style="overflow-x:auto;">
+    <table class="styled-table">
+      <thead>
+        <tr><th>ID</th><th>Клиент</th><th>Тренер</th><th>Зал</th><th>Дата</th><th>Время</th><th>Длительность</th><th>Действия</th></tr>
+      </thead>
+      <tbody id="allTrainingsTableBody">
+        {% for t in trainings %}
+        <tr>
+          <td>{{ t.id }}</td>
+          <td>{% for c in clients %}{% if c.id == t.client_id %}{{ c.name }}{% endif %}{% endfor %}</td>
+          <td>{% for tr in trainers %}{% if tr.id == t.trener_id %}{{ tr.name }}{% endif %}{% endfor %}</td>
+          <td>{% for r in rooms %}{% if r.id == t.room_id %}{{ r.address }}{% endif %}{% endfor %}</td>
+          <td>{{ t.date_time.strftime('%d.%m.%Y') }}</td>
+          <td>{{ t.date_time.strftime('%H:%M') }}</td>
+          <td>{{ t.duration }} мин</td>
+          <td><a href="/admin/training/delete/{{ t.id }}" onclick="return confirm('Удалить тренировку?')">Удалить</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
 <script>
 function toggleModal(id, show) {
     document.getElementById(id).style.display = show ? 'flex' : 'none';
@@ -249,6 +337,30 @@ document.querySelectorAll('.btnEditEquipment').forEach(btn=>{
         document.querySelector('#formEquipment select[name=room_id]').value = btn.dataset.room_id || '';
         toggleModal('modalEquipment', true);
     };
+});
+document.getElementById('btnShowClients').onclick = ()=> toggleModal('modalAllClients', true);
+document.getElementById('closeAllClients').onclick = ()=> toggleModal('modalAllClients', false);
+document.getElementById('btnShowSubs').onclick = ()=> toggleModal('modalAllSubs', true);
+document.getElementById('closeAllSubs').onclick = ()=> toggleModal('modalAllSubs', false);
+document.getElementById('searchAllClients').addEventListener('input', function() {
+  const f = this.value.toLowerCase();
+  document.querySelectorAll('#allClientsTableBody tr').forEach(r=>{
+    r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+  });
+});
+document.getElementById('searchAllSubs').addEventListener('input', function() {
+  const f = this.value.toLowerCase();
+  document.querySelectorAll('#allSubsTableBody tr').forEach(r=>{
+    r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+  });
+});
+document.getElementById('btnShowTrainings') && (document.getElementById('btnShowTrainings').onclick = ()=> toggleModal('modalAllTrainings', true));
+document.getElementById('closeAllTrainings') && (document.getElementById('closeAllTrainings').onclick = ()=> toggleModal('modalAllTrainings', false));
+document.getElementById('searchAllTrainings') && document.getElementById('searchAllTrainings').addEventListener('input', function() {
+  const f = this.value.toLowerCase();
+  document.querySelectorAll('#allTrainingsTableBody tr').forEach(r=>{
+    r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+  });
 });
 window.onclick = function(event) {
     if(event.target.classList.contains('modal')) {
