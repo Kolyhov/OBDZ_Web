@@ -48,7 +48,7 @@ Designed to streamline the management of clients, subscriptions, equipment, and 
 
 ### Clone Repository
 ```bash
-git clone https://github.com/yourusername/fitness-club-is.git
+git clone https://github.com/Kolyhov/OBDZ_Web.git
 cd fitness-club-is
 ```
 
