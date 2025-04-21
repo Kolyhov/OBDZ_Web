@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход в систему</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Вход</h2>
+    <form method="POST">
+        <label>Логин:</label><br>
+        <input type="text" name="username"><br>
+        <label>Пароль:</label><br>
+        <input type="password" name="password"><br><br>
+        <input type="submit" value="Войти">
+    </form>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+</div>
+</body>
+</html>

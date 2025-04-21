@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Панель тренера</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Добро пожаловать, Тренер!</h2>
+    <p>Вот твои тренировки:</p>
+    <ul>
+        {% for t in trainings %}
+            <li>{{ t.date_time }}</li>
+        {% endfor %}
+    </ul>
+    <a href="/logout">Выйти</a>
+</div>
+</body>
+</html>
