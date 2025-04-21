@@ -1,13 +1,296 @@
 <!DOCTYPE html>
 <html>
-<head><title>Панель регистратора</title>
+<head>
+    <title>Панель регистратора</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* стили модалей, таблиц и поиска, как было ранее */
+    </style>
 </head>
 <body>
 <div class="container">
     <h2>Добро пожаловать, Регистратор!</h2>
-    <p>Здесь будет создание клиентов, абонементов и тренировок.</p>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="error">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+    <button id="btnAddClient">Добавить клиента</button>
+    <button id="btnAddSub">Добавить абонемент</button>
     <a href="/logout">Выйти</a>
+    <input type="text" id="clientSearch" placeholder="Поиск клиента..." style="margin:20px 0;width:100%;max-width:400px;">
+    <div style="overflow-x:auto;">
+    <table id="clientsTable" class="styled-table">
+        <thead>
+            <tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Тренер</th><th>Абонемент</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+        {% for c in clients %}
+            <tr data-id="{{ c.id }}" data-name="{{ c.name }}" data-phone="{{ c.phone }}" data-reg-date="{{ c.reg_date }}" data-trener-id="{{ c.trener_id }}" data-sub-id="{{ c.sub_id }}" data-main-room-id="{{ c.main_room_id }}">
+                <td>{{ c.id }}</td>
+                <td class="td-name">{{ c.name }}</td>
+                <td class="td-phone">{{ c.phone }}</td>
+                <td class="td-trener">{% for t in trainers %}{% if t.id == c.trener_id %}{{ t.name }}{% endif %}{% endfor %}</td>
+                <td class="td-sub">{% for s in subs %}{% if s.id == c.sub_id %}{{ s.start_date }}{% endif %}{% endfor %}</td>
+                <td>
+                    <button class="btnEditClient">Редактировать</button>
+                    <a href="/registrar/client/delete/{{ c.id }}" onclick="return confirm('Удалить?')">Удалить</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
 </div>
+
+<!-- Модалка: Создать/Редактировать клиента -->
+<div id="modalClient" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeClient">&times;</span>
+        <h3 id="clientTitle">Новый клиент</h3>
+        <form id="formClient" method="POST">
+            <label>Имя:</label>
+            <input type="text" name="name" required>
+            <label>Телефон (11-12 цифр):</label>
+            <input type="text" name="phone" maxlength="12" pattern="\d{11,12}" title="11 или 12 цифр, без пробелов" required>
+            <label>Дата регистрации:</label>
+            <input type="date" name="reg_date" required>
+            <label>Основной зал:</label>
+            <select name="main_room_id" id="roomSelect" required>
+                <option value="">— выбери зал —</option>
+                {% for r in rooms %}
+                    <option value="{{ r.id }}">{{ r.address }} (вместимость: {{ r.capacity }})</option>
+                {% endfor %}
+            </select>
+            <label>Тренер:</label>
+            <select name="trener_id" id="trainerSelect" disabled>
+                <option value="">— выбери тренера —</option>
+                {% for t in trainers %}
+                    <option value="{{ t.id }}" data-room-id="{{ t.main_room_id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" id="submitClient" value="Создать клиента">
+        </form>
+        <!-- Таблица абонементов клиента -->
+        <div id="clientSubsTable" style="display:none;margin:30px 0;">
+            <h4>Абонементы клиента</h4>
+            <table class="styled-table">
+                <thead>
+                    <tr><th>ID</th><th>Дата начала</th><th>Длительность</th><th>Кол-во занятий</th><th></th></tr>
+                </thead>
+                <tbody id="subsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: Добавить абонемент -->
+<div id="modalSub" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeSub">&times;</span>
+        <h3>Новый абонемент</h3>
+        <form action="/registrar/sub/create" method="POST">
+            <label>Дата начала:</label>
+            <input type="date" name="start_date" required>
+
+            <label>Длительность (в днях):</label>
+            <input type="number" name="duration" required>
+
+            <label>Количество занятий:</label>
+            <input type="number" name="workout" required>
+
+            <label>Клиент:</label>
+            <select name="client_id" required>
+                <option value="">— выбери клиента —</option>
+                {% for c in clients %}
+                    <option value="{{ c.id }}">{{ c.name }} (тел: {{ c.phone }})</option>
+                {% endfor %}
+            </select>
+
+            <input type="submit" value="Создать абонемент">
+        </form>
+    </div>
+</div>
+
+<!-- Модалка: Редактировать абонемент -->
+<div id="modalEditSub" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeEditSub">&times;</span>
+        <h3>Редактировать абонемент</h3>
+        <form id="formEditSub" method="POST">
+            <input type="hidden" name="sub_id">
+            <label>Дата начала:</label>
+            <input type="date" name="start_date" required>
+            <label>Длительность (в днях):</label>
+            <input type="number" name="duration" required>
+            <label>Количество занятий:</label>
+            <input type="number" name="workout" required>
+            <input type="submit" value="Сохранить">
+        </form>
+    </div>
+</div>
+
+<style>
+.modal { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.modal-content { background:#fff; border-radius:10px; padding:32px 24px; min-width:320px; max-width:90vw; box-shadow:0 2px 16px rgba(0,0,0,0.15); position:relative; }
+.close { position:absolute; right:16px; top:12px; font-size:28px; cursor:pointer; }
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1.05em;
+    min-width: 700px;
+    width: 100%;
+    background: #fff;
+    border-radius: 10px 10px 6px 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+.styled-table thead tr {
+    background-color: #4f8cff;
+    color: #fff;
+    text-align: left;
+    font-weight: bold;
+}
+.styled-table th, .styled-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #e3e3e3;
+}
+.styled-table tbody tr {
+    border-bottom: 1px solid #e3e3e3;
+    transition: background 0.2s;
+}
+.styled-table tbody tr:hover {
+    background: #f4f6fb;
+}
+.styled-table td {
+    vertical-align: middle;
+}
+@media (max-width: 900px) {
+    .styled-table, .styled-table thead, .styled-table tbody, .styled-table th, .styled-table td, .styled-table tr {
+        display: block;
+    }
+    .styled-table thead tr {
+        display: none;
+    }
+    .styled-table td {
+        padding: 10px 8px;
+        border: none;
+        position: relative;
+    }
+    .styled-table td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #4f8cff;
+    }
+}
+</style>
+
+<script>
+const roomSelect    = document.getElementById('roomSelect');
+const trainerSelect = document.getElementById('trainerSelect');
+
+// --- Открытие/закрытие модалок ---
+function toggleModal(id, show) {
+    document.getElementById(id).style.display = show ? 'flex' : 'none';
+}
+document.getElementById('btnAddClient').onclick = ()=> {
+    document.getElementById('clientTitle').innerText = 'Новый клиент';
+    document.getElementById('formClient').action = '/registrar/client/create';
+    document.getElementById('submitClient').value = 'Создать клиента';
+    document.getElementById('formClient').reset();
+    trainerSelect.disabled = true;
+    Array.from(trainerSelect.options).forEach(opt => {
+        if (opt.value) opt.hidden = true;
+    });
+    toggleModal('modalClient', true);
+};
+document.getElementById('closeClient').onclick = ()=> toggleModal('modalClient', false);
+document.getElementById('btnAddSub').onclick = ()=> toggleModal('modalSub', true);
+document.getElementById('closeSub').onclick = ()=> toggleModal('modalSub', false);
+
+// Собираем все абонементы по клиентам для быстрого доступа в JS
+const allSubs = {};
+{% for c in clients %}
+    allSubs[{{c.id}}] = [
+        {% for s in subs if s.client_id==c.id %}
+            {id: {{s.id}}, start_date: '{{s.start_date}}', duration: {{s.duration}}, workout: {{s.workout}}},
+        {% endfor %}
+    ];
+{% endfor %}
+
+// --- Редактировать клиента ---
+document.querySelectorAll('.btnEditClient').forEach(btn=>{
+    btn.onclick = ()=> {
+        const tr = btn.closest('tr');
+        const clientId = tr.dataset.id;
+        document.querySelector('input[name=name]').value = tr.dataset.name;
+        document.querySelector('input[name=phone]').value = tr.dataset.phone;
+        document.querySelector('input[name=reg_date]').value = tr.dataset.regDate;
+        // Показываем тренеров по текущему залу клиента
+        const roomId = tr.dataset.mainRoomId;
+        roomSelect.value    = roomId;
+        trainerSelect.disabled = false;
+        Array.from(trainerSelect.options).forEach(opt => {
+            if (!opt.value) return;
+            opt.hidden = (opt.dataset.roomId !== roomId);
+        });
+        trainerSelect.value = tr.dataset.trenerId;
+        document.getElementById('clientTitle').innerText = `Редактировать клиента #${clientId}`;
+        document.getElementById('formClient').action = `/registrar/client/edit/${clientId}`;
+        document.getElementById('submitClient').value = 'Сохранить изменения';
+        // --- Таблица абонементов клиента ---
+        const subsTable = document.getElementById('clientSubsTable');
+        const subsBody = document.getElementById('subsTableBody');
+        subsBody.innerHTML = '';
+        (allSubs[clientId]||[]).forEach(s=>{
+            subsBody.innerHTML += `<tr><td>${s.id}</td><td>${s.start_date}</td><td>${s.duration}</td><td>${s.workout}</td><td><button class='btnEditSub' data-subid='${s.id}' data-start='${s.start_date}' data-duration='${s.duration}' data-workout='${s.workout}'>Редактировать</button></td></tr>`;
+        });
+        subsTable.style.display = (allSubs[clientId]||[]).length ? 'block' : 'none';
+        toggleModal('modalClient', true);
+    };
+});
+// --- Открытие модалки редактирования абонемента ---
+document.addEventListener('click', function(e) {
+    if(e.target.classList.contains('btnEditSub')) {
+        e.preventDefault();
+        const btn = e.target;
+        document.querySelector('#formEditSub input[name=sub_id]').value = btn.dataset.subid;
+        document.querySelector('#formEditSub input[name=start_date]').value = btn.dataset.start;
+        document.querySelector('#formEditSub input[name=duration]').value = btn.dataset.duration;
+        document.querySelector('#formEditSub input[name=workout]').value = btn.dataset.workout;
+        document.getElementById('formEditSub').action = `/registrar/sub/edit/${btn.dataset.subid}`;
+        toggleModal('modalEditSub', true);
+    }
+});
+document.getElementById('closeEditSub').onclick = ()=> toggleModal('modalEditSub', false);
+// --- Поиск ---
+document.getElementById('clientSearch').addEventListener('input', function() {
+    const f = this.value.toLowerCase();
+    document.querySelectorAll('#clientsTable tbody tr').forEach(r=>{
+        r.style.display = r.innerText.toLowerCase().includes(f) ? '' : 'none';
+    });
+});
+// --- Закрытие по клику вне модалки ---
+window.onclick = function(event) {
+    if(event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+
+roomSelect.addEventListener('change', function () {
+    const selectedRoom = this.value;
+    trainerSelect.disabled = !selectedRoom;
+    Array.from(trainerSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        opt.hidden = (opt.dataset.roomId !== selectedRoom);
+    });
+    trainerSelect.value = '';
+});
+trainerSelect.disabled = true;
+</script>
 </body>
 </html>

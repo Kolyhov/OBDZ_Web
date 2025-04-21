@@ -1,13 +1,260 @@
 <!DOCTYPE html>
 <html>
-<head><title>Панель администратора</title>
+<head>
+    <title>Панель администратора</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .styled-table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1.05em;
+            min-width: 700px;
+            width: 100%;
+            background: #fff;
+            border-radius: 10px 10px 6px 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        }
+        .styled-table thead tr {
+            background-color: #4f8cff;
+            color: #fff;
+            text-align: left;
+            font-weight: bold;
+        }
+        .styled-table th, .styled-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #e3e3e3;
+        }
+        .styled-table tbody tr {
+            border-bottom: 1px solid #e3e3e3;
+            transition: background 0.2s;
+        }
+        .styled-table tbody tr:hover {
+            background: #f4f6fb;
+        }
+        .styled-table td {
+            vertical-align: middle;
+        }
+        @media (max-width: 900px) {
+            .styled-table, .styled-table thead, .styled-table tbody, .styled-table th, .styled-table td, .styled-table tr {
+                display: block;
+            }
+            .styled-table thead tr {
+                display: none;
+            }
+            .styled-table td {
+                padding: 10px 8px;
+                border: none;
+                position: relative;
+            }
+            .styled-table td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                display: block;
+                margin-bottom: 4px;
+                color: #4f8cff;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h2>Добро пожаловать, Администратор!</h2>
-    <p>Здесь будет управление тренерами, залами и оборудованием.</p>
+    <button id="btnAddRoom">Добавить зал</button>
+    <button id="btnAddTrener">Добавить тренера</button>
+    <button id="btnAddEquipment">Добавить оборудование</button>
     <a href="/logout">Выйти</a>
+    <div style="overflow-x:auto; margin-top:30px;">
+        <h3>Залы</h3>
+        <table class="styled-table">
+            <thead>
+                <tr><th>ID</th><th>Адрес</th><th>Вместимость</th><th>Действия</th></tr>
+            </thead>
+            <tbody>
+            {% for r in rooms %}
+                <tr>
+                    <td>{{ r.id }}</td>
+                    <td>{{ r.address }}</td>
+                    <td>{{ r.capacity }}</td>
+                    <td>
+                        <button class="btnEditRoom" data-id="{{ r.id }}" data-address="{{ r.address }}" data-capacity="{{ r.capacity }}">Редактировать</button>
+                        <a href="/admin/room/delete/{{ r.id }}" onclick="return confirm('Удалить?')">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <h3 style="margin-top:40px;">Тренеры</h3>
+        <table class="styled-table">
+            <thead>
+                <tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Специализация</th><th>Основной зал</th><th>Действия</th></tr>
+            </thead>
+            <tbody>
+            {% for t in trainers %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.phone }}</td>
+                    <td>{{ t.spec }}</td>
+                    <td>{% for r in rooms %}{% if r.id == t.main_room_id %}{{ r.address }}{% endif %}{% endfor %}</td>
+                    <td>
+                        <button class="btnEditTrener" data-id="{{ t.id }}" data-name="{{ t.name }}" data-phone="{{ t.phone }}" data-spec="{{ t.spec }}" data-main_room_id="{{ t.main_room_id }}">Редактировать</button>
+                        <a href="/admin/trener/delete/{{ t.id }}" onclick="return confirm('Удалить?')">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <h3 style="margin-top:40px;">Оборудование</h3>
+        <table class="styled-table">
+            <thead>
+                <tr><th>ID</th><th>Название</th><th>Состояние</th><th>Зал</th><th>Действия</th></tr>
+            </thead>
+            <tbody>
+            {% for e in equipment %}
+                <tr>
+                    <td>{{ e.id }}</td>
+                    <td>{{ e.name }}</td>
+                    <td>{{ e.state }}</td>
+                    <td>{% for r in rooms %}{% if r.id == e.room_id %}{{ r.address }}{% endif %}{% endfor %}{% if not e.room_id %}<span style="color:#888;">нет</span>{% endif %}</td>
+                    <td>
+                        <button class="btnEditEquipment" data-id="{{ e.id }}" data-name="{{ e.name }}" data-state="{{ e.state }}" data-room_id="{{ e.room_id }}">Редактировать</button>
+                        <a href="/admin/equipment/delete/{{ e.id }}" onclick="return confirm('Удалить?')">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Модалка: Добавить/Редактировать зал -->
+<div id="modalRoom" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeRoom">&times;</span>
+        <h3 id="roomTitle">Новый зал</h3>
+        <form id="formRoom" method="POST">
+            <label>Адрес:</label>
+            <input type="text" name="address" required>
+            <label>Вместимость:</label>
+            <input type="number" name="capacity" required>
+            <input type="submit" id="submitRoom" value="Создать зал">
+        </form>
+    </div>
+</div>
+
+<!-- Модалка: Добавить/Редактировать тренера -->
+<div id="modalTrener" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeTrener">&times;</span>
+        <h3 id="trenerTitle">Новый тренер</h3>
+        <form id="formTrener" method="POST">
+            <label>Имя:</label>
+            <input type="text" name="name" required>
+            <label>Телефон:</label>
+            <input type="text" name="phone" maxlength="12" required>
+            <label>Специализация:</label>
+            <input type="text" name="spec" required>
+            <label>Основной зал:</label>
+            <select name="main_room_id" required>
+                <option value="">— выбери зал —</option>
+                {% for r in rooms %}
+                    <option value="{{ r.id }}">{{ r.address }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" id="submitTrener" value="Создать тренера">
+        </form>
+    </div>
+</div>
+
+<!-- Модалка: Добавить/Редактировать оборудование -->
+<div id="modalEquipment" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" id="closeEquipment">&times;</span>
+        <h3 id="equipmentTitle">Новое оборудование</h3>
+        <form id="formEquipment" method="POST">
+            <label>Название:</label>
+            <input type="text" name="name" required>
+            <label>Состояние:</label>
+            <input type="text" name="state" required>
+            <label>Зал:</label>
+            <select name="room_id">
+                <option value="">— без зала —</option>
+                {% for r in rooms %}
+                    <option value="{{ r.id }}">{{ r.address }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" id="submitEquipment" value="Создать оборудование">
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleModal(id, show) {
+    document.getElementById(id).style.display = show ? 'flex' : 'none';
+}
+document.getElementById('btnAddRoom').onclick = ()=> {
+    document.getElementById('roomTitle').innerText = 'Новый зал';
+    document.getElementById('formRoom').action = '/admin/room/create';
+    document.getElementById('submitRoom').value = 'Создать зал';
+    document.getElementById('formRoom').reset();
+    toggleModal('modalRoom', true);
+};
+document.getElementById('closeRoom').onclick = ()=> toggleModal('modalRoom', false);
+document.querySelectorAll('.btnEditRoom').forEach(btn=>{
+    btn.onclick = ()=> {
+        document.getElementById('roomTitle').innerText = 'Редактировать зал';
+        document.getElementById('formRoom').action = `/admin/room/edit/${btn.dataset.id}`;
+        document.getElementById('submitRoom').value = 'Сохранить';
+        document.querySelector('#formRoom input[name=address]').value = btn.dataset.address;
+        document.querySelector('#formRoom input[name=capacity]').value = btn.dataset.capacity;
+        toggleModal('modalRoom', true);
+    };
+});
+document.getElementById('btnAddTrener').onclick = ()=> {
+    document.getElementById('trenerTitle').innerText = 'Новый тренер';
+    document.getElementById('formTrener').action = '/admin/trener/create';
+    document.getElementById('submitTrener').value = 'Создать тренера';
+    document.getElementById('formTrener').reset();
+    toggleModal('modalTrener', true);
+};
+document.getElementById('closeTrener').onclick = ()=> toggleModal('modalTrener', false);
+document.querySelectorAll('.btnEditTrener').forEach(btn=>{
+    btn.onclick = ()=> {
+        document.getElementById('trenerTitle').innerText = 'Редактировать тренера';
+        document.getElementById('formTrener').action = `/admin/trener/edit/${btn.dataset.id}`;
+        document.getElementById('submitTrener').value = 'Сохранить';
+        document.querySelector('#formTrener input[name=name]').value = btn.dataset.name;
+        document.querySelector('#formTrener input[name=phone]').value = btn.dataset.phone;
+        document.querySelector('#formTrener input[name=spec]').value = btn.dataset.spec;
+        document.querySelector('#formTrener select[name=main_room_id]').value = btn.dataset.main_room_id;
+        toggleModal('modalTrener', true);
+    };
+});
+document.getElementById('btnAddEquipment') && (document.getElementById('btnAddEquipment').onclick = ()=> {
+    document.getElementById('equipmentTitle').innerText = 'Новое оборудование';
+    document.getElementById('formEquipment').action = '/admin/equipment/create';
+    document.getElementById('submitEquipment').value = 'Создать оборудование';
+    document.getElementById('formEquipment').reset();
+    toggleModal('modalEquipment', true);
+});
+document.getElementById('closeEquipment') && (document.getElementById('closeEquipment').onclick = ()=> toggleModal('modalEquipment', false));
+document.querySelectorAll('.btnEditEquipment').forEach(btn=>{
+    btn.onclick = ()=> {
+        document.getElementById('equipmentTitle').innerText = 'Редактировать оборудование';
+        document.getElementById('formEquipment').action = `/admin/equipment/edit/${btn.dataset.id}`;
+        document.getElementById('submitEquipment').value = 'Сохранить';
+        document.querySelector('#formEquipment input[name=name]').value = btn.dataset.name;
+        document.querySelector('#formEquipment input[name=state]').value = btn.dataset.state;
+        document.querySelector('#formEquipment select[name=room_id]').value = btn.dataset.room_id || '';
+        toggleModal('modalEquipment', true);
+    };
+});
+window.onclick = function(event) {
+    if(event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+</script>
 </body>
 </html>
