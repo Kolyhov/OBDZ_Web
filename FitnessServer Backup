@@ -1,0 +1,818 @@
+--
+-- PostgreSQL database cluster dump
+--
+
+-- Started on 2025-04-21 13:23:36 EEST
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Roles
+--
+
+CREATE ROLE kolyhov;
+ALTER ROLE kolyhov WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS;
+CREATE ROLE postgres;
+ALTER ROLE postgres WITH SUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:+QSiNc4fTa+t4W2Xxdh5bA==$xfEPs0x5E6iCBbsudY+rIU4x+4BTNYnaAaiyMS5uzNE=:sQfhcaMymUcozJEtlgzlWb5GunIP22bIuTqzVKS+NQY=';
+
+--
+-- User Configurations
+--
+
+
+
+
+
+
+--
+-- Databases
+--
+
+--
+-- Database "template1" dump
+--
+
+\connect template1
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.17 (Homebrew)
+-- Dumped by pg_dump version 17.0
+
+-- Started on 2025-04-21 13:23:36 EEST
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: kolyhov
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO kolyhov;
+
+--
+-- TOC entry 3667 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: kolyhov
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+-- Completed on 2025-04-21 13:23:36 EEST
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "postgres" dump
+--
+
+\connect postgres
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.17 (Homebrew)
+-- Dumped by pg_dump version 17.0
+
+-- Started on 2025-04-21 13:23:36 EEST
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: kolyhov
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO kolyhov;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 218 (class 1259 OID 16428)
+-- Name: client; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.client (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    phone character(12) NOT NULL,
+    reg_date date NOT NULL,
+    trener_id integer,
+    sub_id integer,
+    main_room_id integer
+);
+
+
+ALTER TABLE public.client OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 16427)
+-- Name: client_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.client_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.client_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3756 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: client_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.client_id_seq OWNED BY public.client.id;
+
+
+--
+-- TOC entry 212 (class 1259 OID 16394)
+-- Name: equipment; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.equipment (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    state integer NOT NULL,
+    room_id integer,
+    CONSTRAINT equipment_state_check CHECK (((state >= 1) AND (state <= 5)))
+);
+
+
+ALTER TABLE public.equipment OWNER TO postgres;
+
+--
+-- TOC entry 211 (class 1259 OID 16393)
+-- Name: equipment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.equipment_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.equipment_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3757 (class 0 OID 0)
+-- Dependencies: 211
+-- Name: equipment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.equipment_id_seq OWNED BY public.equipment.id;
+
+
+--
+-- TOC entry 210 (class 1259 OID 16386)
+-- Name: room; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.room (
+    id integer NOT NULL,
+    address character varying(255) NOT NULL,
+    capacity integer NOT NULL,
+    CONSTRAINT room_capacity_check CHECK ((capacity > 0))
+);
+
+
+ALTER TABLE public.room OWNER TO postgres;
+
+--
+-- TOC entry 209 (class 1259 OID 16385)
+-- Name: room_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.room_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.room_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3758 (class 0 OID 0)
+-- Dependencies: 209
+-- Name: room_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.room_id_seq OWNED BY public.room.id;
+
+
+--
+-- TOC entry 216 (class 1259 OID 16419)
+-- Name: subscription; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.subscription (
+    id integer NOT NULL,
+    start_date date NOT NULL,
+    duration integer NOT NULL,
+    workout integer NOT NULL,
+    client_id integer NOT NULL,
+    CONSTRAINT subscription_duration_check CHECK ((duration >= 0)),
+    CONSTRAINT subscription_workout_check CHECK ((workout >= 0))
+);
+
+
+ALTER TABLE public.subscription OWNER TO postgres;
+
+--
+-- TOC entry 215 (class 1259 OID 16418)
+-- Name: subscription_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.subscription_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.subscription_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3759 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: subscription_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.subscription_id_seq OWNED BY public.subscription.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16445)
+-- Name: training; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.training (
+    id integer NOT NULL,
+    client_id integer NOT NULL,
+    sub_id integer NOT NULL,
+    trener_id integer NOT NULL,
+    room_id integer NOT NULL,
+    date_time timestamp without time zone NOT NULL,
+    duration integer NOT NULL,
+    CONSTRAINT training_duration_check CHECK ((duration >= 30))
+);
+
+
+ALTER TABLE public.training OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16444)
+-- Name: training_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.training_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.training_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3760 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: training_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.training_id_seq OWNED BY public.training.id;
+
+
+--
+-- TOC entry 214 (class 1259 OID 16407)
+-- Name: trener; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.trener (
+    id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    phone character(12) NOT NULL,
+    spec character varying(100) NOT NULL,
+    main_room_id integer
+);
+
+
+ALTER TABLE public.trener OWNER TO postgres;
+
+--
+-- TOC entry 213 (class 1259 OID 16406)
+-- Name: trener_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.trener_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.trener_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3761 (class 0 OID 0)
+-- Dependencies: 213
+-- Name: trener_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.trener_id_seq OWNED BY public.trener.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 16473)
+-- Name: user; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."user" (
+    id integer NOT NULL,
+    username character varying(80) NOT NULL,
+    password_hash character varying(128) NOT NULL,
+    role character varying(20) NOT NULL
+);
+
+
+ALTER TABLE public."user" OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16472)
+-- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.user_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.user_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3762 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.user_id_seq OWNED BY public."user".id;
+
+
+--
+-- TOC entry 3562 (class 2604 OID 16431)
+-- Name: client id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.client ALTER COLUMN id SET DEFAULT nextval('public.client_id_seq'::regclass);
+
+
+--
+-- TOC entry 3559 (class 2604 OID 16397)
+-- Name: equipment id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipment ALTER COLUMN id SET DEFAULT nextval('public.equipment_id_seq'::regclass);
+
+
+--
+-- TOC entry 3558 (class 2604 OID 16389)
+-- Name: room id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room ALTER COLUMN id SET DEFAULT nextval('public.room_id_seq'::regclass);
+
+
+--
+-- TOC entry 3561 (class 2604 OID 16422)
+-- Name: subscription id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription ALTER COLUMN id SET DEFAULT nextval('public.subscription_id_seq'::regclass);
+
+
+--
+-- TOC entry 3563 (class 2604 OID 16448)
+-- Name: training id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training ALTER COLUMN id SET DEFAULT nextval('public.training_id_seq'::regclass);
+
+
+--
+-- TOC entry 3560 (class 2604 OID 16410)
+-- Name: trener id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.trener ALTER COLUMN id SET DEFAULT nextval('public.trener_id_seq'::regclass);
+
+
+--
+-- TOC entry 3564 (class 2604 OID 16476)
+-- Name: user id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."user" ALTER COLUMN id SET DEFAULT nextval('public.user_id_seq'::regclass);
+
+
+--
+-- TOC entry 3745 (class 0 OID 16428)
+-- Dependencies: 218
+-- Data for Name: client; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.client (id, name, phone, reg_date, trener_id, sub_id, main_room_id) FROM stdin;
+11	Загграничный Владислав	380687359645	2025-04-17	\N	\N	2
+12	Петренко Валерий	380686412031	2025-04-01	\N	\N	1
+10	Никитюк Иван	380995478739	2025-04-21	\N	12	1
+\.
+
+
+--
+-- TOC entry 3739 (class 0 OID 16394)
+-- Dependencies: 212
+-- Data for Name: equipment; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.equipment (id, name, state, room_id) FROM stdin;
+2	Гантелі	5	1
+3	Велотренажер	3	2
+1	Бігова доріжка	4	1
+\.
+
+
+--
+-- TOC entry 3737 (class 0 OID 16386)
+-- Dependencies: 210
+-- Data for Name: room; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.room (id, address, capacity) FROM stdin;
+1	вул. Спортивна 1	50
+2	просп. Перемоги 7	30
+\.
+
+
+--
+-- TOC entry 3743 (class 0 OID 16419)
+-- Dependencies: 216
+-- Data for Name: subscription; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.subscription (id, start_date, duration, workout, client_id) FROM stdin;
+12	2025-04-21	120	8	10
+\.
+
+
+--
+-- TOC entry 3747 (class 0 OID 16445)
+-- Dependencies: 220
+-- Data for Name: training; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.training (id, client_id, sub_id, trener_id, room_id, date_time, duration) FROM stdin;
+13	12	12	2	1	2025-04-21 19:00:00	30
+14	10	12	2	1	2025-04-24 12:12:00	30
+\.
+
+
+--
+-- TOC entry 3741 (class 0 OID 16407)
+-- Dependencies: 214
+-- Data for Name: trener; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.trener (id, name, phone, spec, main_room_id) FROM stdin;
+1	Олег Шварц	380971112233	Силові	1
+2	Анна Лайт	380501234567	Йога	1
+3	Макс Кросс	380931112244	Кросфіт	2
+\.
+
+
+--
+-- TOC entry 3749 (class 0 OID 16473)
+-- Dependencies: 222
+-- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."user" (id, username, password_hash, role) FROM stdin;
+1	admin	pbkdf2:sha256:1000000$xYL1TxFvoy34b8YS$827b5b8232b977f10ddf76e02ead735aabc1ac23b876cc7e6899c81ce7c012b7	admin
+2	reg	pbkdf2:sha256:1000000$YXLU478G0y84uYXw$4e86064a88bd8e9115aed5c44634830b6f819744a31d3ef5565d2a5455aec96a	registrar
+3	trener	pbkdf2:sha256:1000000$TWpTdkNgLMpwCBcp$7bc55a0579dcdd35c797b9953e96e2827dc69a456016457875fc7053cb60ccd5	trener
+\.
+
+
+--
+-- TOC entry 3763 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: client_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.client_id_seq', 12, true);
+
+
+--
+-- TOC entry 3764 (class 0 OID 0)
+-- Dependencies: 211
+-- Name: equipment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.equipment_id_seq', 4, true);
+
+
+--
+-- TOC entry 3765 (class 0 OID 0)
+-- Dependencies: 209
+-- Name: room_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.room_id_seq', 4, true);
+
+
+--
+-- TOC entry 3766 (class 0 OID 0)
+-- Dependencies: 215
+-- Name: subscription_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.subscription_id_seq', 12, true);
+
+
+--
+-- TOC entry 3767 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: training_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.training_id_seq', 14, true);
+
+
+--
+-- TOC entry 3768 (class 0 OID 0)
+-- Dependencies: 213
+-- Name: trener_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.trener_id_seq', 4, true);
+
+
+--
+-- TOC entry 3769 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.user_id_seq', 3, true);
+
+
+--
+-- TOC entry 3579 (class 2606 OID 16433)
+-- Name: client client_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.client
+    ADD CONSTRAINT client_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3573 (class 2606 OID 16400)
+-- Name: equipment equipment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipment
+    ADD CONSTRAINT equipment_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3571 (class 2606 OID 16392)
+-- Name: room room_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.room
+    ADD CONSTRAINT room_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3577 (class 2606 OID 16426)
+-- Name: subscription subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription
+    ADD CONSTRAINT subscription_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3581 (class 2606 OID 16451)
+-- Name: training training_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training
+    ADD CONSTRAINT training_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3575 (class 2606 OID 16412)
+-- Name: trener trener_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.trener
+    ADD CONSTRAINT trener_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3583 (class 2606 OID 16478)
+-- Name: user user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."user"
+    ADD CONSTRAINT user_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3585 (class 2606 OID 16480)
+-- Name: user user_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."user"
+    ADD CONSTRAINT user_username_key UNIQUE (username);
+
+
+--
+-- TOC entry 3590 (class 2606 OID 16501)
+-- Name: client client_main_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.client
+    ADD CONSTRAINT client_main_room_id_fkey FOREIGN KEY (main_room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 3591 (class 2606 OID 16439)
+-- Name: client client_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.client
+    ADD CONSTRAINT client_sub_id_fkey FOREIGN KEY (sub_id) REFERENCES public.subscription(id);
+
+
+--
+-- TOC entry 3592 (class 2606 OID 16434)
+-- Name: client client_trener_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.client
+    ADD CONSTRAINT client_trener_id_fkey FOREIGN KEY (trener_id) REFERENCES public.trener(id);
+
+
+--
+-- TOC entry 3586 (class 2606 OID 16401)
+-- Name: equipment equipment_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.equipment
+    ADD CONSTRAINT equipment_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 3588 (class 2606 OID 16496)
+-- Name: subscription fk_subscription_client; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription
+    ADD CONSTRAINT fk_subscription_client FOREIGN KEY (client_id) REFERENCES public.client(id);
+
+
+--
+-- TOC entry 3589 (class 2606 OID 16486)
+-- Name: subscription subscription_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription
+    ADD CONSTRAINT subscription_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.client(id);
+
+
+--
+-- TOC entry 3593 (class 2606 OID 16452)
+-- Name: training training_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training
+    ADD CONSTRAINT training_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.client(id);
+
+
+--
+-- TOC entry 3594 (class 2606 OID 16467)
+-- Name: training training_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training
+    ADD CONSTRAINT training_room_id_fkey FOREIGN KEY (room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 3595 (class 2606 OID 16457)
+-- Name: training training_sub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training
+    ADD CONSTRAINT training_sub_id_fkey FOREIGN KEY (sub_id) REFERENCES public.subscription(id);
+
+
+--
+-- TOC entry 3596 (class 2606 OID 16462)
+-- Name: training training_trener_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.training
+    ADD CONSTRAINT training_trener_id_fkey FOREIGN KEY (trener_id) REFERENCES public.trener(id);
+
+
+--
+-- TOC entry 3587 (class 2606 OID 16413)
+-- Name: trener trener_main_room_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.trener
+    ADD CONSTRAINT trener_main_room_id_fkey FOREIGN KEY (main_room_id) REFERENCES public.room(id);
+
+
+--
+-- TOC entry 3755 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: kolyhov
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+-- Completed on 2025-04-21 13:23:36 EEST
+
+--
+-- PostgreSQL database dump complete
+--
+
+-- Completed on 2025-04-21 13:23:36 EEST
+
+--
+-- PostgreSQL database cluster dump complete
+--
+
