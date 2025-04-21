@@ -1,64 +1,172 @@
-/* static/style.css */
+/* Основные цвета */
+:root {
+    --primary: #1a2980;    /* Глубокий синий */
+    --secondary: #2d3a4b;  /* Тёмно-серый */
+    --white: #f9f9f9;      /* Светлый фон */
+    --background: #1e2a5b; /* Тёмно-синий фон */
+    --text: #3e3c3c;       /* Светлый текст */
+    --shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #f4f6fb;
+    background: var(--background);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
     margin: 0;
-    padding: 0;
+    min-height: 100vh;
 }
+
+/* Контейнеры */
 .container {
-    max-width: 900px;
-    margin: 60px auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-    padding: 32px 28px 28px 28px;
+    max-width: 1100px;
+    margin: 40px auto;
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow);
 }
-h2 {
-    text-align: center;
-    color: #2d3a4b;
+
+h2, h3 {
+    color: var(--primary);
+    font-weight: 600;
     margin-bottom: 24px;
 }
-form label {
-    color: #2d3a4b;
-    font-weight: 500;
-}
-input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 16px 0;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: #f9fafb;
-    font-size: 16px;
-}
-input[type="submit"] {
-    width: 100%;
-    background: #4f8cff;
-    color: #fff;
+
+button, a {
+    background: var(--primary);
+    color: white;
     border: none;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: 0.2s;
     cursor: pointer;
-    transition: background 0.2s;
-}
-input[type="submit"]:hover {
-    background: #2563eb;
-}
-a {
-    color: #4f8cff;
     text-decoration: none;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+button:hover, a:hover {
+    background: #152066;
+}
+
+/* Модальные окна */
+.modal {
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 80%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+}
+
+.close {
+    color: var(--primary);
+    font-weight: bold;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    cursor: pointer;
+}
+
+/* Таблицы */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.styled-table thead {
+    background: var(--primary);
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    padding: 16px;
+    border-bottom: 1px solid #e4e4e4;
+}
+
+.styled-table tbody tr:hover {
+    background: #eef2ff;
+}
+
+.styled-table td:first-child {
     font-weight: 500;
 }
-a:hover {
-    text-decoration: underline;
+
+.styled-table td button, .styled-table td a.button-link {
+    font-size: 0.95em;
+    padding: 4px 10px;
+    border-radius: 5px;
+    line-height: 1.2;
 }
-.error {
-    color: #e53e3e;
-    text-align: center;
-    margin-top: 10px;
+
+.styled-table td a {
+    font-size: 0.95em;
+    padding: 4px 10px;
+    border-radius: 5px;
+    line-height: 1.2;
 }
-ul {
-    padding-left: 20px;
+
+/* Формы */
+input, select {
+    width: 100%;
+    font-size: 1rem;
+    height: 2rem;
+    padding: 12px;
+    margin: 0.5rem 0;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f5f5f5;
+}
+
+input[type="submit"] {
+    background: var(--primary);
+    color: white;
+    margin-top: 16px;
+    height: 48px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    padding: 0 24px;
+    transition: 0.2s;
+}
+
+input[type="submit"]:hover {
+    background: #152066;
+}
+
+#trainingTrenerRadios label, #trainingSubRadios label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    margin-right: 0;
+    white-space: nowrap;
+}
+
+#trainingTrenerRadios input[type=radio], #trainingSubRadios input[type=radio] {
+    margin-right: 0;
+    width: 30px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        padding: 24px;
+    }
+    .styled-table th, .styled-table td {
+        padding: 12px;
+    }
 }
